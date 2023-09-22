@@ -1,5 +1,6 @@
 image:
   name: alpine:latest
+
 stages:
   - compile
   - audit
@@ -23,14 +24,15 @@ compile:
 #     - sh ci/vulnerabilities_scanner.sh
 
 test:
-  stage: teste
-  script: - sh  ./ci/test.sh
+  stage: test
+  script:
+    - sh ./ci/test.sh
 
 package:
   before_script:
-    - sh ci/install-dependedncies.sh
+    - sh ci/install-dependencies.sh
   stage: package
-  atifacts:
+  artifacts:
     untracked: true
     expire_in: 10 minutes
   script:
