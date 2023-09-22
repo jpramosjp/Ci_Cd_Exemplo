@@ -1,0 +1,1 @@
+zip artifact.zip $1

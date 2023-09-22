@@ -1,32 +1,44 @@
-name: Verificação de Segurança
+image:
+  name: alpine:latest
+stages:
+  - compile
+  - audit
+  - test
+  - package
+  - deploy
 
-on: [push]
+compile:
+  stage: compile
+  script:
+    - sh ci/compile.sh codigo.txt
 
-jobs:
-  security-scan:
-    runs-on: ubuntu-latest
+# scan virus:
+#   stage: auditoria
+#   script:
+#     - sh ci/virus_scanner.sh
 
-    steps:
-    - name: Checkout do código
-      uses: actions/checkout@v2
+# scan vulnerabilities:
+#   stage: auditoria
+#   script:
+#     - sh ci/vulnerabilities_scanner.sh
 
-    - name: Instalação do OWASP ZAP
-      run: |
-        wget https://github.com/zaproxy/zaproxy/releases/download/v2.11.0/ZAP_2.11.0_Linux.tar.gz
-        tar -xf ZAP_2.11.0_Linux.tar.gz
-        export PATH=$PATH:$PWD/ZAP_2.11.0
+test:
+  stage: teste
+  script: - sh  ci/test.sh
 
-    - name: Iniciar OWASP ZAP
-      run: zap.sh -daemon -host 0.0.0.0 -port 8080
+package:
+  before_script:
+    - sh ci/install-dependedncies.sh
+  stage: package
+  atifacts:
+    untracked: true
+    expire_in: 10 minutes
+  script:
+    - sh ci/package.sh codigo.txt
 
-    - name: Executar Verificação de Segurança
-      run: zap-cli quick-scan --self-contained --start-options "-config api.disablekey=true" --baseline "https://seu-site-aqui" -l High
-
-    - name: Gerar Relatório de Segurança
-      run: zap-cli report -o /github/workspace/security-report.html -f html
-
-    - name: Publicar Relatório de Segurança
-      uses: actions/upload-artifact@v2
-      with:
-        name: security-report
-        path: /github/workspace/security-report.html
+deploy:
+  stage: deploy
+  dependencies:
+    - package
+  script:
+    - sh ci/deploy.sh artifact.zip
