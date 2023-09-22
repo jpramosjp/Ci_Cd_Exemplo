@@ -24,7 +24,7 @@ compile:
 
 test:
   stage: teste
-  script: - sh  ci/test.sh
+  script: - sh  ./ci/test.sh
 
 package:
   before_script:
